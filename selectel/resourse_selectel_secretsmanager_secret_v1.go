@@ -22,37 +22,39 @@ func resourceSecretsmanagerSecretV1() *schema.Resource {
 		DeleteContext: resourceSecretsmanagerSecretV1Delete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-			// StateContext: resourceSecretsmanagerSecretV1ImportState,
+			StateContext: resourceSecretsmanagerSecretV1ImportState,
 		},
 
 		Schema: map[string]*schema.Schema{
 			"key": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Description: "key — unique key,name of the secret",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Description: "description — optional description of the secret",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    false,
 			},
 			"value": {
-				Type:      schema.TypeString,
-				Required:  true,
-				ForceNew:  false,
-				Sensitive: true,
-				// DefaultFunc: func() (interface{}, error) {
-				// 	return "SENSITIVE_TERRAFORM_IMPORT", nil
-				// },
+				Description: "value — secret value, e.g. password, API key, certificate key, or other",
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
+				ForceNew:    false, // otherwise, will replace existing secret if you import it 
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Description: "project_id — id of a project where secret is used",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Description: "name — computed name of the secret same as key",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 		},
 	}
@@ -88,13 +90,6 @@ func resourceSecretsmanagerSecretV1Create(ctx context.Context, d *schema.Resourc
 }
 
 func resourceSecretsmanagerSecretV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	config := meta.(*Config)
-	if config.ProjectID == "" {
-		return diag.FromErr(errors.New("SEL_PROJECT_ID must be set for the resource import"))
-	}
-	d.Set("project_id", config.ProjectID)
-	// projectID := d.Get("project_id").(string)
-
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -178,7 +173,6 @@ func resourceSecretsmanagerSecretV1ImportState(ctx context.Context, d *schema.Re
 	}
 
 	d.Set("project_id", config.ProjectID)
-	// d.Set("value", "SENSITIVE_TERRAFORM_IMPORT")
 
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
