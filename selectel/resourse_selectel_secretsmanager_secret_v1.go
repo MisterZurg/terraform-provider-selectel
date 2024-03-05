@@ -43,7 +43,7 @@ func resourceSecretsmanagerSecretV1() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				ForceNew:    false, // otherwise, will replace existing secret if you import it 
+				ForceNew:    false, // otherwise, will replace existing secret if you import it
 			},
 			"project_id": {
 				Description: "project_id — id of a project where secret is used",

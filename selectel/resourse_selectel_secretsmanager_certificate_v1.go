@@ -98,12 +98,12 @@ func resourceSecretsmanagerCertificateV1() *schema.Resource {
 			},
 			"serial": {
 				Description: "serial — number written in the certificate that was chosen by the CA which issued the certificate",
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"validity": {
 				Description: "validity — validity of a certificate in terms of notBefore and notAfter timestamps.",
-				Type: schema.TypeSet,
+				Type:        schema.TypeSet,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"basic_constraints": {
@@ -124,8 +124,8 @@ func resourceSecretsmanagerCertificateV1() *schema.Resource {
 			},
 			"version": {
 				Description: "version — of the certificate",
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
 			},
 		},
 	}
@@ -270,7 +270,7 @@ func resourceSecretsmanagerCertificateV1ImportState(ctx context.Context, d *sche
 	d.Set("name", cert.Name)
 	d.Set("dns_names", cert.DNSNames)
 	d.Set("id", cert.ID)
-	
+
 	issuedByFlatten := resourceSecretsmanagerCertificateV1IssuedByToSet(cert.IssuedBy)
 	if err := d.Set("issued_by", issuedByFlatten); err != nil {
 		return nil, fmt.Errorf("cannot set issued_by while importing cert %v", certID)
