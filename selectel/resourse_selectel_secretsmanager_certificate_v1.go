@@ -248,7 +248,7 @@ func resourceSecretsmanagerCertificateV1Delete(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func resourceSecretsmanagerCertificateV1ImportState(_ context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceSecretsmanagerCertificateV1ImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
 	if config.ProjectID == "" {
 		return nil, fmt.Errorf("SEL_PROJECT_ID must be set for the resource import")
@@ -256,5 +256,31 @@ func resourceSecretsmanagerCertificateV1ImportState(_ context.Context, d *schema
 
 	d.Set("project_id", config.ProjectID)
 
+	cl, diagErr := getSecretsManagerClient(d, meta)
+	if diagErr != nil {
+		return nil, fmt.Errorf("can't getSecretsManagerClient: %v", diagErr)
+	}
+
+	certID := d.Id()
+	cert, errGet := cl.Certificates.Get(ctx, certID)
+	if errGet != nil {
+		return nil, errGettingObject(objectSecret, d.Id(), errGet)
+	}
+
+	d.Set("name", cert.Name)
+	d.Set("dns_names", cert.DNSNames)
+	d.Set("id", cert.ID)
+	
+	issuedByFlatten := resourceSecretsmanagerCertificateV1IssuedByToSet(cert.IssuedBy)
+	if err := d.Set("issued_by", issuedByFlatten); err != nil {
+		return nil, fmt.Errorf("cannot set issued_by while importing cert %v", certID)
+	}
+
+	vaidityFlatten := resourceSecretsmanagerCertificateV1ValidityByToSet(cert.Validity)
+	if err := d.Set("validity", vaidityFlatten); err != nil {
+		return nil, fmt.Errorf("cannot set validity while importing cert %v", certID)
+	}
+
+	d.Set("version", cert.Version)
 	return []*schema.ResourceData{d}, nil
 }
