@@ -56,6 +56,11 @@ func resourceSecretsmanagerSecretV1() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"created_at": {
+				Description: "created_at — time when the secret was created",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -116,6 +121,7 @@ func resourceSecretsmanagerSecretV1Read(ctx context.Context, d *schema.ResourceD
 	if _, ok := d.GetOk("value"); !ok {
 		d.Set("value", "UNKNOWN")
 	}
+	d.Set("created_at", secret.Version.CreatedAt)
 
 	return nil
 }
