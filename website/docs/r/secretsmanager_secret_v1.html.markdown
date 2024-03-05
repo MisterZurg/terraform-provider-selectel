@@ -32,14 +32,14 @@ resource "selectel_secretsmanager_secret_v1" "secret_1" {
 
 ## Import
 
-When importing Secret you have to provide unique identifier of the associated Cloud Platform project
+~> When importing Secret you have to provide unique identifier of the associated Cloud Platform project
 
 ### Using import block
 -> In Terraform v1.5.0 and later, use an import block to import Secret using template below.
 
 ```hcl
 import {
-   to = selectel_secretsmanager_secret_v1.import_secret
+   to = selectel_secretsmanager_secret_v1.imported_secret
    id = <key>
 }
 ```
@@ -51,7 +51,7 @@ import {
 ### Using terraform import
 ```shell
 export SEL_PROJECT_ID=<selectel_project_id>
-terraform import selectel_secretsmanager_secret_v1.secret_1 <key>
+terraform import selectel_secretsmanager_secret_v1.imported_secret <key>
 ```
 
 * `<selectel_project_id>` — Unique identifier of the associated Cloud Platform project. To get the project ID, in the [Control panel](https://my.selectel.ru/vpc/), go to **Cloud Platform** ⟶ project name ⟶ copy the ID of the required project. Learn more about [Cloud Platform projects](https://docs.selectel.ru/cloud/managed-databases/about/projects/).
