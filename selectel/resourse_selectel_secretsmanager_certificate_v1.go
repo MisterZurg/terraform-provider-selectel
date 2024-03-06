@@ -210,7 +210,7 @@ func resourceSecretsmanagerCertificateV1Update(ctx context.Context, d *schema.Re
 		}
 	}
 
-	if d.HasChange("certificates") && d.HasChange("private_key") {
+	if d.HasChange("certificates") && d.HasChange("private_key") || d.HasChange("certificates") {
 		rawCertificates := d.Get("certificates").([]interface{})
 		certificates := convertToStringSlice(rawCertificates)
 
