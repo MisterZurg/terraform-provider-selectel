@@ -54,12 +54,12 @@ resource "selectel_secretsmanager_certificate_v1" "cert_1" {
 - `project_id` (Required) — unique identifier of the associated Cloud Platform project.
 
 ## Attributes Reference
-- `dns_names`— domain names.
+- `dns_names` — domain names.
 - `id` — computed id of a certificate.
 - `issued_by` — information that is incorporated into certificate.
 - `serial` — number written in the certificate that was chosen by the CA which issued the certificate.
 - `validity` — validity of a certificate in terms of notBefore and notAfter timestamps.
-- `version`— of the certificate.
+- `version` — of the certificate.
 
 ## Import
 
@@ -140,9 +140,9 @@ All you have to do is to set `certificates` attribute from `null` to `[]` and `p
  
 # __generated__ by Terraform
 resource "selectel_secretsmanager_certificate_v1" "imported_certificate" {
-  certificates = []
+  certificates = []                     # <- set null to []
   name         = "Cert-from-Cloud"
-  private_key  = "null" # sensitive
+  private_key  = "null" # sensitive     # <- set null to string
   project_id   = <selectel_project_id>
 }
 ```
