@@ -151,7 +151,7 @@ func resourceSecretsmanagerCertificateV1Create(ctx context.Context, d *schema.Re
 		},
 	}
 
-	log.Print(msgCreate(objectCertificate, cert))
+	log.Print(msgCreate(objectCertificate, cert.Name))
 
 	createdCert, errCr := cl.Certificates.Create(ctx, cert)
 	if errCr != nil {
@@ -221,7 +221,7 @@ func resourceSecretsmanagerCertificateV1Update(ctx context.Context, d *schema.Re
 			},
 		}
 
-		log.Print(msgUpdate(objectCertificate, d.Id(), upd))
+		log.Print(msgUpdate(objectCertificate, d.Id(), "updated pem"))
 
 		errUpd := cl.Certificates.UpdateVersion(ctx, d.Id(), upd)
 		if errUpd != nil {
@@ -262,6 +262,9 @@ func resourceSecretsmanagerCertificateV1ImportState(ctx context.Context, d *sche
 	}
 
 	certID := d.Id()
+
+	log.Print(msgImport(objectCertificate, certID))
+
 	cert, errGet := cl.Certificates.Get(ctx, certID)
 	if errGet != nil {
 		return nil, errGettingObject(objectSecret, d.Id(), errGet)

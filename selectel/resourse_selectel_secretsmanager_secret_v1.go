@@ -81,7 +81,7 @@ func resourceSecretsmanagerSecretV1Create(ctx context.Context, d *schema.Resourc
 		Value:       value,
 	}
 
-	log.Print(msgCreate(objectSecret, secret))
+	log.Print(msgCreate(objectSecret, secret.Key))
 
 	errCr := cl.Secrets.Create(ctx, secret)
 	if errCr != nil {
@@ -186,6 +186,8 @@ func resourceSecretsmanagerSecretV1ImportState(ctx context.Context, d *schema.Re
 	}
 
 	secretName := d.Id()
+
+	log.Print(msgImport(objectSecret, secretName))
 
 	secret, errGet := cl.Secrets.Get(ctx, secretName)
 	if errGet != nil {
