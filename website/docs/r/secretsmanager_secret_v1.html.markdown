@@ -16,7 +16,7 @@ resource "selectel_secretsmanager_secret_v1" "secret_1" {
     key = "Terraform-Secret"
     description = "Secret from .tf"
     value = "zelibobs"
-    project_id = selectel_vpc_project_v2.tf_secretsmanager.id
+    project_id = selectel_vpc_project_v2.project_1.id
 }
 ```
 
@@ -72,7 +72,7 @@ Planning failed. Terraform encountered an error while generating this plan.
 ╷
 │ Error: Missing required argument
 │
-│   with selectel_secretsmanager_secret_v1.import_secret,
+│   with selectel_secretsmanager_secret_v1.imported_secret,
 │   on generated_resources.tf line 4:
 │   (source code not available)
 │
@@ -86,7 +86,7 @@ Planning failed. Terraform encountered an error while generating this plan.
 # Please review these resources and move them into your main configuration files.
  
 # __generated__ by Terraform
-resource "selectel_secretsmanager_secret_v1" "import_secret" {
+resource "selectel_secretsmanager_secret_v1" "imported_secret" {
   description = "123456"
   key         = "Secret-from-Cloud"
   project_id  = <selectel_project_id>
@@ -100,7 +100,7 @@ All you have to do is to set `null` to `"null"` for example, this move doesn't D
 # Please review these resources and move them into your main configuration files.
  
 # __generated__ by Terraform
-resource "selectel_secretsmanager_secret_v1" "import_secret" {
+resource "selectel_secretsmanager_secret_v1" "imported_secret" {
   description = "123456"
   key         = "Secret-from-Cloud"
   project_id  = <selectel_project_id>

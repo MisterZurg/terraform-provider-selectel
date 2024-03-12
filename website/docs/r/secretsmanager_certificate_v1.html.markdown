@@ -3,7 +3,7 @@ layout: "selectel"
 page_title: "Selectel: selectel_secretsmanager_certificate_v1"
 sidebar_current: "docs-selectel-resource-secretsmanager-certificate-v1"
 description: |-
-    Creates and manages a Certificate in Selectel SecretsManagre service  using public API v1.
+    Creates and manages a Certificate in Selectel SecretsManager service using public API v1.
 ---
 
 # selectel\_secretsmanager\_certificate_v1
@@ -17,7 +17,7 @@ resource "selectel_secretsmanager_certificate_v1" "cert_1" {
     name = "Terraform-Certificate",
     certificates = [file("./_cert.pem")]
     private_key = file("./_private_key.pem")
-    project_id = selectel_vpc_project_v2.tf_secretsmanager.id
+    project_id = selectel_vpc_project_v2.project_1.id
 }
 ```
 
@@ -42,7 +42,7 @@ resource "selectel_secretsmanager_certificate_v1" "cert_1" {
 >     ...
 >     -----END PRIVATE KEY-----
 >     EOF
->     project_id = selectel_vpc_project_v2.tf_secretsmanager.id
+>     project_id = selectel_vpc_project_v2.project_1.id
 > }
 > ```
 > </details>
@@ -102,7 +102,7 @@ Planning failed. Terraform encountered an error while generating this plan.
 ╷
 │ Error: Missing required argument
 │ 
-│   with selectel_secretsmanager_certificate_v1.import_cert,
+│   with selectel_secretsmanager_certificate_v1.imported_certificate,
 │   on generated_resources.tf line 1:
 │   (source code not available)
 │ 
@@ -111,7 +111,7 @@ Planning failed. Terraform encountered an error while generating this plan.
 ╷
 │ Error: Missing required argument
 │ 
-│   with selectel_secretsmanager_certificate_v1.import_cert,
+│   with selectel_secretsmanager_certificate_v1.imported_certificate,
 │   on generated_resources.tf line 3:
 │   (source code not available)
 │ 

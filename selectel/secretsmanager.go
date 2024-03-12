@@ -13,7 +13,7 @@ func getSecretsManagerClient(d *schema.ResourceData, meta interface{}) (*secrets
 	// region := d.Get("region").(string)
 	selvpcClient, err := config.GetSelVPCClientWithProjectScope(d.Get("project_id").(string))
 	if err != nil {
-		return nil, diag.FromErr(fmt.Errorf("can't get project-scope selvpc client for craas: %w", err))
+		return nil, diag.FromErr(fmt.Errorf("can't get project-scope selvpc client for secretsmanager: %w", err))
 	}
 
 	cl, err := secretsmanager.New(

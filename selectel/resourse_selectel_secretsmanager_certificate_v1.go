@@ -2,11 +2,13 @@ package selectel
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/selectel/secretsmanager-go/secretsmanagererrors"
 	"github.com/selectel/secretsmanager-go/service/certs"
 )
 
@@ -155,7 +157,7 @@ func resourceSecretsmanagerCertificateV1Create(ctx context.Context, d *schema.Re
 
 	createdCert, errCr := cl.Certificates.Create(ctx, cert)
 	if errCr != nil {
-		return diag.FromErr(fmt.Errorf("can't create a secret resource: %w", errCr))
+		return diag.FromErr(errCreatingObject(objectCertificate, errCr))
 	}
 
 	d.SetId(createdCert.ID)
@@ -172,6 +174,11 @@ func resourceSecretsmanagerCertificateV1Read(ctx context.Context, d *schema.Reso
 	log.Print(msgGet(objectCertificate, d.Id()))
 	cert, errGet := cl.Certificates.Get(ctx, d.Get("id").(string))
 	if errGet != nil {
+		// When certificate isn't found Backend -> SDK return the following error:
+		// — secretsmanager-go: error — NOT_FOUND: 
+		if errors.Is(errGet, secretsmanagererrors.ErrNotFoundStatusText) {
+			d.SetId("")
+		}
 		return diag.FromErr(errGettingObject(objectCertificate, d.Id(), errGet))
 	}
 
