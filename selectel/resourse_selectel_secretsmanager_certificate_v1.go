@@ -22,7 +22,6 @@ func resourceSecretsmanagerCertificateV1() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceSecretsmanagerCertificateV1ImportState,
 		},
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Description: "name — name of the certificate",
@@ -51,7 +50,8 @@ func resourceSecretsmanagerCertificateV1() *schema.Resource {
 				ForceNew:    true,
 			},
 			"dns_names": {
-				Type: schema.TypeList,
+				Description: "dns_names — computed list of Subject Alternative Names",
+				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -103,20 +103,20 @@ func resourceSecretsmanagerCertificateV1() *schema.Resource {
 			},
 			"validity": {
 				Description: "validity — validity of a certificate in terms of notBefore and notAfter timestamps.",
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"basic_constraints": {
 							Type:     schema.TypeBool,
-							Computed: true,
+							Required: true,
 						},
 						"not_after": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Required: true,
 						},
 						"not_before": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Required: true,
 						},
 					},
 				},
@@ -174,20 +174,11 @@ func resourceSecretsmanagerCertificateV1Read(ctx context.Context, d *schema.Reso
 	if errGet != nil {
 		return diag.FromErr(errGettingObject(objectCertificate, d.Id(), errGet))
 	}
+
 	d.Set("dns_names", cert.DNSNames)
-
-	issuedByFlatten := resourceSecretsmanagerCertificateV1IssuedByToSet(cert.IssuedBy)
-	if err := d.Set("issued_by", issuedByFlatten); err != nil {
-		return diag.FromErr(err)
-	}
-
+	d.Set("issued_by", convertSMIssuedByToList(cert.IssuedBy))
 	d.Set("serial", cert.Serial)
-
-	vaidityFlatten := resourceSecretsmanagerCertificateV1ValidityByToSet(cert.Validity)
-	if err := d.Set("validity", vaidityFlatten); err != nil {
-		return diag.FromErr(err)
-	}
-
+	d.Set("validity", convertSMValidityToList(cert.Validity))
 	d.Set("version", cert.Version)
 
 	return nil
@@ -274,16 +265,35 @@ func resourceSecretsmanagerCertificateV1ImportState(ctx context.Context, d *sche
 	d.Set("dns_names", cert.DNSNames)
 	d.Set("id", cert.ID)
 
-	issuedByFlatten := resourceSecretsmanagerCertificateV1IssuedByToSet(cert.IssuedBy)
-	if err := d.Set("issued_by", issuedByFlatten); err != nil {
-		return nil, fmt.Errorf("cannot set issued_by while importing cert %v", certID)
-	}
+	d.Set("issued_by", convertSMIssuedByToList(cert.IssuedBy))
 
-	vaidityFlatten := resourceSecretsmanagerCertificateV1ValidityByToSet(cert.Validity)
-	if err := d.Set("validity", vaidityFlatten); err != nil {
-		return nil, fmt.Errorf("cannot set validity while importing cert %v", certID)
-	}
+	d.Set("serial", cert.Serial)
+
+	d.Set("validity", convertSMValidityToList(cert.Validity))
 
 	d.Set("version", cert.Version)
 	return []*schema.ResourceData{d}, nil
+}
+
+// convertSMIssuedByToList — helper for setting "issued_by" attribute with nested structure.
+func convertSMIssuedByToList(ib certs.IssuedBy) []interface{} {
+	return []interface{}{
+		map[string]interface{}{
+			"country":        convertToInterfaceSlice(ib.Country),
+			"locality":       convertToInterfaceSlice(ib.Locality),
+			"serial_number":  ib.SerialNumber,
+			"street_address": convertToInterfaceSlice(ib.StreetAddress),
+		},
+	}
+}
+
+// convertValidityToList — helper for setting "validity" attribute with nested structure.
+func convertSMValidityToList(validity certs.Validity) []interface{} {
+	return []interface{}{
+		map[string]interface{}{
+			"basic_constraints": validity.BasicConstraints,
+			"not_after":         validity.NotAfter,
+			"not_before":        validity.NotBefore,
+		},
+	}
 }
