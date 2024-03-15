@@ -32,6 +32,30 @@ func getSecretsManagerClient(d *schema.ResourceData, meta interface{}) (*secrets
 	return cl, nil
 }
 
+func getSecretsManagerClientForAccImportTests(meta interface{}) (*secretsmanager.Client, diag.Diagnostics) {
+	config := meta.(*Config)
+	// region := d.Get("region").(string)
+	selvpcClient, err := config.GetSelVPCClientWithProjectScope(config.ProjectID)
+	if err != nil {
+		return nil, diag.FromErr(fmt.Errorf("can't get project-scope selvpc client for secretsmanager: %w", err))
+	}
+
+	cl, err := secretsmanager.New(
+		secretsmanager.WithAuthOpts(
+			&secretsmanager.AuthOpts{KeystoneToken: selvpcClient.GetXAuthToken()},
+		),
+
+		// secretsmanager.WithCustomURLSecrets(endpoint),
+		// secretsmanager.WithCustomURLCertificates(endpoint),
+	)
+
+	if err != nil {
+		return nil, diag.FromErr(fmt.Errorf("can't init secretsmanager client: %w", err))
+	}
+
+	return cl, nil
+}
+
 func convertToStringSlice(sl []interface{}) []string {
 	result := make([]string, len(sl))
 	for i := range sl {

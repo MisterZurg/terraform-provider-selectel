@@ -1,6 +1,8 @@
 package selectel
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -19,7 +21,7 @@ func TestAccSecretsmanagerCertificateV1ImportBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccSelectelPreCheck(t) },
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckVPCV2ProjectDestroy,
+		CheckDestroy:      testAccCheckSecretsmanagerV1CertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSecretsmanagerCertificateV1WithoutProjectBasic(certificateName, projectID),
@@ -110,4 +112,25 @@ func testAccSecretsmanagerCertificateV1WithoutProjectBasic(certificateName, proj
 		certificateName,
 		projectID,
 	)
+}
+
+
+func testAccCheckSecretsmanagerV1CertificateDestroy(s *terraform.State) error {
+	smImportClient, diagErr := getSecretsManagerClientForAccImportTests(testAccProvider.Meta())
+	if diagErr != nil {
+		return fmt.Errorf("can't get getSecretsManagerClientForAccImportTests for certificate import test")
+	}
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "selectel_secretsmanager_certificate_v1" {
+			continue
+		}
+
+		_, err := smImportClient.Certificates.Get(context.Background(), rs.Primary.ID)
+		if err == nil {
+			return errors.New("certificate still exists")
+		}
+	}
+
+	return nil
 }

@@ -1,6 +1,8 @@
 package selectel
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"os"
@@ -8,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccSecretsmanagerSecretV1ImportBasic(t *testing.T) {
@@ -22,7 +25,7 @@ func TestAccSecretsmanagerSecretV1ImportBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccSelectelPreCheck(t) },
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckVPCV2ProjectDestroy,
+		CheckDestroy:      testAccCheckSecretsmanagerV1SecretDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccSecretsmanagerSecretV1WithoutProjectBasic(secretKey, secretDescription, secretValue, projectID),
@@ -51,4 +54,25 @@ func testAccSecretsmanagerSecretV1WithoutProjectBasic(secretKey, secretDescripti
 		secretValue,
 		projectID,
 	)
+}
+
+func testAccCheckSecretsmanagerV1SecretDestroy(s *terraform.State) error {
+	smImportClient, diagErr := getSecretsManagerClientForAccImportTests(testAccProvider.Meta())
+	if diagErr != nil {
+		return fmt.Errorf("can't get getSecretsManagerClientForAccImportTests for secret import test")
+	}
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "selectel_secretsmanager_secret_v1" {
+			continue
+		}
+
+		_, key, _ := resourceSecretsmanagerSecretV1ParseID(rs.Primary.ID)
+		_, err := smImportClient.Certificates.Get(context.Background(), key)
+		if err == nil {
+			return errors.New("secret still exists")
+		}
+	}
+
+	return nil
 }
