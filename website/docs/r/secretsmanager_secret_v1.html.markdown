@@ -40,9 +40,11 @@ resource "selectel_secretsmanager_secret_v1" "secret_1" {
 ```hcl
 import {
    to = selectel_secretsmanager_secret_v1.imported_secret
-   id = <key>
+   id = "<selectel_project_id>/<key>"
 }
 ```
+
+* `<selectel_project_id>` — Unique identifier of the associated Cloud Platform project. To get the project ID, in the [Control panel](https://my.selectel.ru/vpc/), go to **Cloud Platform** ⟶ project name ⟶ copy the ID of the required project. Learn more about [Cloud Platform projects](https://docs.selectel.ru/cloud/managed-databases/about/projects/).
 
 * `<key>` — Unique identifier of the secret, its name. To get the name of the secret in the [Control panel](https://my.selectel.ru/vpc/), go to **Cloud Platform** ⟶ **Secrets Manager** ⟶ **Secret** copy the Name.
 
@@ -51,7 +53,7 @@ import {
 ### Using terraform import
 ```shell
 export SEL_PROJECT_ID=<selectel_project_id>
-terraform import selectel_secretsmanager_secret_v1.imported_secret <key>
+terraform import selectel_secretsmanager_secret_v1.imported_secret <selectel_project_id>/<key>
 ```
 
 * `<selectel_project_id>` — Unique identifier of the associated Cloud Platform project. To get the project ID, in the [Control panel](https://my.selectel.ru/vpc/), go to **Cloud Platform** ⟶ project name ⟶ copy the ID of the required project. Learn more about [Cloud Platform projects](https://docs.selectel.ru/cloud/managed-databases/about/projects/).

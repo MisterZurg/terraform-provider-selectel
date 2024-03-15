@@ -103,18 +103,15 @@ func resourceSecretsmanagerSecretV1Read(ctx context.Context, d *schema.ResourceD
 
 	log.Print(msgGet(objectSecret, d.Id()))
 
-	var key string
-	fullID := strings.Split(d.Id(), "/")
-	if len(fullID) > 1 {
-		key = fullID[1]
-	} else {
-		key = fullID[0]
+	_, key, err := resourceSecretsmanagerSecretV1ParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(errParseID(objectSecret, d.Id()))
 	}
 
 	secret, errGet := cl.Secrets.Get(ctx, key)
 	if errGet != nil {
 		// When secret isn't found Backend -> SDK return the following error:
-		// — secretsmanager-go: error — INCORRECT_REQUEST: not a secret
+		// — secretsmanager-go: error — INCORRECT_REQUEST: not a secret.
 		if errors.Is(errGet, secretsmanagererrors.ErrBadRequestStatusText) {
 			d.SetId("")
 		}
@@ -174,10 +171,6 @@ func resourceSecretsmanagerSecretV1Update(ctx context.Context, d *schema.Resourc
 	return resourceSecretsmanagerSecretV1Read(ctx, d, meta)
 }
 
-func resourceSecretV1BuildID(projectID, key string) string {
-	return fmt.Sprintf("%s/%s", projectID, key)
-}
-
 func resourceSecretsmanagerSecretV1ImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
 	if config.ProjectID == "" {
@@ -191,11 +184,14 @@ func resourceSecretsmanagerSecretV1ImportState(ctx context.Context, d *schema.Re
 		return nil, fmt.Errorf("can't getSecretsManagerClient: %v", diagErr)
 	}
 
-	secretName := d.Id()
+	_, key, err := resourceSecretsmanagerSecretV1ParseID(d.Id())
+	if err != nil {
+		return nil, errParseID(objectSecret, d.Id())
+	}
 
-	log.Print(msgImport(objectSecret, secretName))
+	log.Print(msgImport(objectSecret, key))
 
-	secret, errGet := cl.Secrets.Get(ctx, secretName)
+	secret, errGet := cl.Secrets.Get(ctx, key)
 	if errGet != nil {
 		return nil, errGettingObject(objectSecret, d.Id(), errGet)
 	}
@@ -203,4 +199,21 @@ func resourceSecretsmanagerSecretV1ImportState(ctx context.Context, d *schema.Re
 	d.Set("key", secret.Name)
 	d.Set("description", secret.Description)
 	return []*schema.ResourceData{d}, nil
+}
+
+// resourceSecretV1BuildID — helper that builds ID that is going to be set
+// in Secret resource, to prevent cases where several VPC projects has same key.
+func resourceSecretV1BuildID(projectID, key string) string {
+	return fmt.Sprintf("%s/%s", projectID, key)
+}
+
+// resourceSecretsmanagerSecretV1ParseID — helper that separates Project ID and key
+// from resource ID that was set using resourceSecretV1BuildID.
+func resourceSecretsmanagerSecretV1ParseID(id string) (string, string, error) {
+	idParts := strings.Split(id, "/")
+	if len(idParts) != 2 {
+		return "", "", errParseID(objectSecret, id)
+	}
+
+	return idParts[0], idParts[1], nil
 }

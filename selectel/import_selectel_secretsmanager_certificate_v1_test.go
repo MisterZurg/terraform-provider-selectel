@@ -25,10 +25,10 @@ func TestAccSecretsmanagerCertificateV1ImportBasic(t *testing.T) {
 				Config: testAccSecretsmanagerCertificateV1WithoutProjectBasic(certificateName, projectID),
 			},
 			{
-				ImportStateIdFunc: getTestSecretsmanagerCertificateSetIDForImport,
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateIdFunc:       getTestSecretsmanagerCertificateSetIDForImport,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"certificates", "private_key"},
 			},
 		},
@@ -44,7 +44,6 @@ func getTestSecretsmanagerCertificateSetIDForImport(s *terraform.State) (string,
 
 	return resourceCertificate.Primary.ID, nil
 }
-
 
 func testAccSecretsmanagerCertificateV1WithoutProjectBasic(certificateName, projectID string) string {
 	return fmt.Sprintf(`

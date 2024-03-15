@@ -71,7 +71,7 @@ resource "selectel_secretsmanager_certificate_v1" "cert_1" {
 ```hcl
 import {
    to = selectel_secretsmanager_certificate_v1.imported_certificate
-   id = <id>
+   id = "<id>"
 }
 ```
 

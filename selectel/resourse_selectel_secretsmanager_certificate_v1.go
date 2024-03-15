@@ -175,7 +175,7 @@ func resourceSecretsmanagerCertificateV1Read(ctx context.Context, d *schema.Reso
 	cert, errGet := cl.Certificates.Get(ctx, d.Get("id").(string))
 	if errGet != nil {
 		// When certificate isn't found Backend -> SDK return the following error:
-		// — secretsmanager-go: error — NOT_FOUND: 
+		// — secretsmanager-go: error — NOT_FOUND:.
 		if errors.Is(errGet, secretsmanagererrors.ErrNotFoundStatusText) {
 			d.SetId("")
 		}
