@@ -9,7 +9,7 @@ import (
 	"github.com/selectel/go-selvpcclient/v3/selvpcclient/resell/v2/projects"
 )
 
-func TestAccSecretsmanagerCertificateV1Basic(t *testing.T) {
+func TestAccSecretsManagerCertificateV1Basic(t *testing.T) {
 	var project projects.Project
 
 	projectName := acctest.RandomWithPrefix("tf-acc")
@@ -22,7 +22,7 @@ func TestAccSecretsmanagerCertificateV1Basic(t *testing.T) {
 		CheckDestroy:      testAccCheckVPCV2ProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSecretsmanagerCertificateV1BasicConfig(projectName, certificateName),
+				Config: testAccSecretsManagerCertificateV1BasicConfig(projectName, certificateName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVPCV2ProjectExists("selectel_vpc_project_v2.project_tf_acc_test_1", &project),
 					resource.TestCheckResourceAttr("selectel_secretsmanager_certificate_v1.certificate_tf_acc_test_1", "name", certificateName),
@@ -30,7 +30,7 @@ func TestAccSecretsmanagerCertificateV1Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSecretsmanagerCertificateV1UpdateConfig(projectName, newCertificateName),
+				Config: testAccSecretsManagerCertificateV1UpdateConfig(projectName, newCertificateName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVPCV2ProjectExists("selectel_vpc_project_v2.project_tf_acc_test_1", &project),
 					resource.TestCheckResourceAttr("selectel_secretsmanager_certificate_v1.certificate_tf_acc_test_1", "name", newCertificateName),
@@ -41,7 +41,7 @@ func TestAccSecretsmanagerCertificateV1Basic(t *testing.T) {
 	})
 }
 
-func testAccSecretsmanagerCertificateV1BasicConfig(projectName, certificateName string) string {
+func testAccSecretsManagerCertificateV1BasicConfig(projectName, certificateName string) string {
 	return fmt.Sprintf(`
 		resource "selectel_vpc_project_v2" "project_tf_acc_test_1" {
 			name = "%s"
@@ -112,7 +112,7 @@ func testAccSecretsmanagerCertificateV1BasicConfig(projectName, certificateName 
 	)
 }
 
-func testAccSecretsmanagerCertificateV1UpdateConfig(projectName, newCertificateName string) string {
+func testAccSecretsManagerCertificateV1UpdateConfig(projectName, newCertificateName string) string {
 	return fmt.Sprintf(`
 		resource "selectel_vpc_project_v2" "project_tf_acc_test_1" {
 			name = "%s"

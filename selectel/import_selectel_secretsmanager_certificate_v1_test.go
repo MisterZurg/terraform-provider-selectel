@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccSecretsmanagerCertificateV1ImportBasic(t *testing.T) {
+func TestAccSecretsManagerCertificateV1ImportBasic(t *testing.T) {
 	projectID := os.Getenv("SEL_PROJECT_ID")
 	resourceName := "selectel_secretsmanager_certificate_v1.certificate_tf_acc_test_1"
 
@@ -21,13 +21,12 @@ func TestAccSecretsmanagerCertificateV1ImportBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccSelectelPreCheck(t) },
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckSecretsmanagerV1CertificateDestroy,
+		CheckDestroy:      testAccCheckSecretsManagerV1CertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSecretsmanagerCertificateV1WithoutProjectBasic(certificateName, projectID),
+				Config: testAccSecretsManagerCertificateV1WithoutProjectBasic(certificateName, projectID),
 			},
 			{
-				ImportStateIdFunc:       getTestSecretsmanagerCertificateSetIDForImport,
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -37,17 +36,7 @@ func TestAccSecretsmanagerCertificateV1ImportBasic(t *testing.T) {
 	})
 }
 
-func getTestSecretsmanagerCertificateSetIDForImport(s *terraform.State) (string, error) {
-	resourceCertificateFullName := "selectel_secretsmanager_certificate_v1.certificate_tf_acc_test_1"
-	resourceCertificate, ok := s.RootModule().Resources[resourceCertificateFullName]
-	if !ok {
-		return "", fmt.Errorf("Not found certificate: %s", resourceCertificateFullName)
-	}
-
-	return resourceCertificate.Primary.ID, nil
-}
-
-func testAccSecretsmanagerCertificateV1WithoutProjectBasic(certificateName, projectID string) string {
+func testAccSecretsManagerCertificateV1WithoutProjectBasic(certificateName, projectID string) string {
 	return fmt.Sprintf(`
 		resource "selectel_secretsmanager_certificate_v1" "certificate_tf_acc_test_1" {
 			name = "%s"
@@ -114,8 +103,7 @@ func testAccSecretsmanagerCertificateV1WithoutProjectBasic(certificateName, proj
 	)
 }
 
-
-func testAccCheckSecretsmanagerV1CertificateDestroy(s *terraform.State) error {
+func testAccCheckSecretsManagerV1CertificateDestroy(s *terraform.State) error {
 	smImportClient, diagErr := getSecretsManagerClientForAccImportTests(testAccProvider.Meta())
 	if diagErr != nil {
 		return fmt.Errorf("can't get getSecretsManagerClientForAccImportTests for certificate import test")

@@ -13,17 +13,17 @@ import (
 	"github.com/selectel/secretsmanager-go/service/secrets"
 )
 
-func resourceSecretsmanagerSecretV1() *schema.Resource {
+func resourceSecretsManagerSecretV1() *schema.Resource {
 	return &schema.Resource{
 		Description: "represents a Secret — entity from SecretsManager service",
 
-		CreateContext: resourceSecretsmanagerSecretV1Create,
-		ReadContext:   resourceSecretsmanagerSecretV1Read,
-		UpdateContext: resourceSecretsmanagerSecretV1Update,
-		DeleteContext: resourceSecretsmanagerSecretV1Delete,
+		CreateContext: resourceSecretsManagerSecretV1Create,
+		ReadContext:   resourceSecretsManagerSecretV1Read,
+		UpdateContext: resourceSecretsManagerSecretV1Update,
+		DeleteContext: resourceSecretsManagerSecretV1Delete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceSecretsmanagerSecretV1ImportState,
+			StateContext: resourceSecretsManagerSecretV1ImportState,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -66,7 +66,7 @@ func resourceSecretsmanagerSecretV1() *schema.Resource {
 	}
 }
 
-func resourceSecretsmanagerSecretV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerSecretV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -92,10 +92,10 @@ func resourceSecretsmanagerSecretV1Create(ctx context.Context, d *schema.Resourc
 	projectID := d.Get("project_id").(string)
 	d.SetId(resourceSecretV1BuildID(projectID, key))
 
-	return resourceSecretsmanagerSecretV1Read(ctx, d, meta)
+	return resourceSecretsManagerSecretV1Read(ctx, d, meta)
 }
 
-func resourceSecretsmanagerSecretV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerSecretV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -103,7 +103,7 @@ func resourceSecretsmanagerSecretV1Read(ctx context.Context, d *schema.ResourceD
 
 	log.Print(msgGet(objectSecret, d.Id()))
 
-	_, key, err := resourceSecretsmanagerSecretV1ParseID(d.Id())
+	_, key, err := resourceSecretsManagerSecretV1ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(errParseID(objectSecret, d.Id()))
 	}
@@ -129,7 +129,7 @@ func resourceSecretsmanagerSecretV1Read(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func resourceSecretsmanagerSecretV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerSecretV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -147,7 +147,7 @@ func resourceSecretsmanagerSecretV1Delete(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceSecretsmanagerSecretV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerSecretV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -168,10 +168,13 @@ func resourceSecretsmanagerSecretV1Update(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(errUpdatingObject(objectSecret, d.Id(), errUpd))
 	}
 
-	return resourceSecretsmanagerSecretV1Read(ctx, d, meta)
+	return resourceSecretsManagerSecretV1Read(ctx, d, meta)
 }
 
-func resourceSecretsmanagerSecretV1ImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+// resourceSecretsManagerSecretV1ImportState —  helper used in Importer: &schema.ResourceImporter
+// to avoid difficulties occured with required SEL_PROJECT_ID env in 
+// resourceSecretsManagerSecretV1Read when uising schema.ImportStatePassthroughContext.
+func resourceSecretsManagerSecretV1ImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
 	if config.ProjectID == "" {
 		return nil, errors.New("SEL_PROJECT_ID must be set for the resource import")
@@ -179,25 +182,14 @@ func resourceSecretsmanagerSecretV1ImportState(ctx context.Context, d *schema.Re
 
 	d.Set("project_id", config.ProjectID)
 
-	cl, diagErr := getSecretsManagerClient(d, meta)
-	if diagErr != nil {
-		return nil, fmt.Errorf("can't getSecretsManagerClient: %v", diagErr)
-	}
-
-	_, key, err := resourceSecretsmanagerSecretV1ParseID(d.Id())
+	_, key, err := resourceSecretsManagerSecretV1ParseID(d.Id())
 	if err != nil {
 		return nil, errParseID(objectSecret, d.Id())
 	}
 
 	log.Print(msgImport(objectSecret, key))
-
-	secret, errGet := cl.Secrets.Get(ctx, key)
-	if errGet != nil {
-		return nil, errGettingObject(objectSecret, d.Id(), errGet)
-	}
-
-	d.Set("key", secret.Name)
-	d.Set("description", secret.Description)
+	resourceSecretsManagerSecretV1Read(ctx, d, meta)
+	
 	return []*schema.ResourceData{d}, nil
 }
 
@@ -207,9 +199,9 @@ func resourceSecretV1BuildID(projectID, key string) string {
 	return fmt.Sprintf("%s/%s", projectID, key)
 }
 
-// resourceSecretsmanagerSecretV1ParseID — helper that separates Project ID and key
+// resourceSecretsManagerSecretV1ParseID — helper that separates Project ID and key
 // from resource ID that was set using resourceSecretV1BuildID.
-func resourceSecretsmanagerSecretV1ParseID(id string) (string, string, error) {
+func resourceSecretsManagerSecretV1ParseID(id string) (string, string, error) {
 	idParts := strings.Split(id, "/")
 	if len(idParts) != 2 {
 		return "", "", errParseID(objectSecret, id)

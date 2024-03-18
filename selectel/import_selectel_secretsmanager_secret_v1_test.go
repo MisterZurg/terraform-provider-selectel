@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccSecretsmanagerSecretV1ImportBasic(t *testing.T) {
+func TestAccSecretsManagerSecretV1ImportBasic(t *testing.T) {
 	projectID := os.Getenv("SEL_PROJECT_ID")
 
 	resourceName := "selectel_secretsmanager_secret_v1.secret_tf_acc_test_1"
@@ -25,10 +25,10 @@ func TestAccSecretsmanagerSecretV1ImportBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccSelectelPreCheck(t) },
 		ProviderFactories: testAccProviders,
-		CheckDestroy:      testAccCheckSecretsmanagerV1SecretDestroy,
+		CheckDestroy:      testAccCheckSecretsManagerV1SecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSecretsmanagerSecretV1WithoutProjectBasic(secretKey, secretDescription, secretValue, projectID),
+				Config: testAccSecretsManagerSecretV1WithoutProjectBasic(secretKey, secretDescription, secretValue, projectID),
 				Check:  testAccCheckSelectelImportEnv(resourceName),
 			},
 			{
@@ -41,7 +41,7 @@ func TestAccSecretsmanagerSecretV1ImportBasic(t *testing.T) {
 	})
 }
 
-func testAccSecretsmanagerSecretV1WithoutProjectBasic(secretKey, secretDescription, secretValue, projectID string) string {
+func testAccSecretsManagerSecretV1WithoutProjectBasic(secretKey, secretDescription, secretValue, projectID string) string {
 	return fmt.Sprintf(`
 		resource "selectel_secretsmanager_secret_v1" "secret_tf_acc_test_1" {
 				key = "%s"
@@ -56,7 +56,7 @@ func testAccSecretsmanagerSecretV1WithoutProjectBasic(secretKey, secretDescripti
 	)
 }
 
-func testAccCheckSecretsmanagerV1SecretDestroy(s *terraform.State) error {
+func testAccCheckSecretsManagerV1SecretDestroy(s *terraform.State) error {
 	smImportClient, diagErr := getSecretsManagerClientForAccImportTests(testAccProvider.Meta())
 	if diagErr != nil {
 		return fmt.Errorf("can't get getSecretsManagerClientForAccImportTests for secret import test")
@@ -67,7 +67,7 @@ func testAccCheckSecretsmanagerV1SecretDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, key, _ := resourceSecretsmanagerSecretV1ParseID(rs.Primary.ID)
+		_, key, _ := resourceSecretsManagerSecretV1ParseID(rs.Primary.ID)
 		_, err := smImportClient.Certificates.Get(context.Background(), key)
 		if err == nil {
 			return errors.New("secret still exists")

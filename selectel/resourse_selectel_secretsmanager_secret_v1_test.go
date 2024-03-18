@@ -9,7 +9,7 @@ import (
 	"github.com/selectel/go-selvpcclient/v3/selvpcclient/resell/v2/projects"
 )
 
-func TestAccSecretsmanagerSecretV1Basic(t *testing.T) {
+func TestAccSecretsManagerSecretV1Basic(t *testing.T) {
 	var project projects.Project
 
 	projectName := acctest.RandomWithPrefix("tf-acc")
@@ -24,7 +24,7 @@ func TestAccSecretsmanagerSecretV1Basic(t *testing.T) {
 		CheckDestroy:      testAccCheckVPCV2ProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSecretsmanagerSecretV1BasicConfig(projectName, secretKey, secretDescription, secretValue),
+				Config: testAccSecretsManagerSecretV1BasicConfig(projectName, secretKey, secretDescription, secretValue),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVPCV2ProjectExists("selectel_vpc_project_v2.project_tf_acc_test_1", &project),
 					resource.TestCheckResourceAttr("selectel_secretsmanager_secret_v1.secret_tf_acc_test_1", "key", secretKey),
@@ -33,7 +33,7 @@ func TestAccSecretsmanagerSecretV1Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccSecretsmanagerSecretV1UpdateConfig(projectName, secretKey, newSecretDescription, secretValue),
+				Config: testAccSecretsManagerSecretV1UpdateConfig(projectName, secretKey, newSecretDescription, secretValue),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVPCV2ProjectExists("selectel_vpc_project_v2.project_tf_acc_test_1", &project),
 					resource.TestCheckResourceAttr("selectel_secretsmanager_secret_v1.secret_tf_acc_test_1", "key", secretKey),
@@ -45,7 +45,7 @@ func TestAccSecretsmanagerSecretV1Basic(t *testing.T) {
 	})
 }
 
-func testAccSecretsmanagerSecretV1BasicConfig(projectName, key, description, value string) string {
+func testAccSecretsManagerSecretV1BasicConfig(projectName, key, description, value string) string {
 	return fmt.Sprintf(`
 		resource "selectel_vpc_project_v2" "project_tf_acc_test_1" {
 			name = "%s"
@@ -65,7 +65,7 @@ func testAccSecretsmanagerSecretV1BasicConfig(projectName, key, description, val
 	)
 }
 
-func testAccSecretsmanagerSecretV1UpdateConfig(projectName, key, description, value string) string {
+func testAccSecretsManagerSecretV1UpdateConfig(projectName, key, description, value string) string {
 	return fmt.Sprintf(`
 		resource "selectel_vpc_project_v2" "project_tf_acc_test_1" {
 			name = "%s"

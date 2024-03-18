@@ -12,17 +12,17 @@ import (
 	"github.com/selectel/secretsmanager-go/service/certs"
 )
 
-func resourceSecretsmanagerCertificateV1() *schema.Resource {
+func resourceSecretsManagerCertificateV1() *schema.Resource {
 	return &schema.Resource{
 		Description: "represents a Certificate — entity from SecretsManager service",
 
-		CreateContext: resourceSecretsmanagerCertificateV1Create,
-		ReadContext:   resourceSecretsmanagerCertificateV1Read,
-		UpdateContext: resourceSecretsmanagerCertificateV1Update,
-		DeleteContext: resourceSecretsmanagerCertificateV1Delete,
+		CreateContext: resourceSecretsManagerCertificateV1Create,
+		ReadContext:   resourceSecretsManagerCertificateV1Read,
+		UpdateContext: resourceSecretsManagerCertificateV1Update,
+		DeleteContext: resourceSecretsManagerCertificateV1Delete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: resourceSecretsmanagerCertificateV1ImportState,
+			StateContext: resourceSecretsManagerCertificateV1ImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -133,7 +133,7 @@ func resourceSecretsmanagerCertificateV1() *schema.Resource {
 	}
 }
 
-func resourceSecretsmanagerCertificateV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerCertificateV1Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -162,10 +162,10 @@ func resourceSecretsmanagerCertificateV1Create(ctx context.Context, d *schema.Re
 
 	d.SetId(createdCert.ID)
 
-	return resourceSecretsmanagerCertificateV1Read(ctx, d, meta)
+	return resourceSecretsManagerCertificateV1Read(ctx, d, meta)
 }
 
-func resourceSecretsmanagerCertificateV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerCertificateV1Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -187,11 +187,14 @@ func resourceSecretsmanagerCertificateV1Read(ctx context.Context, d *schema.Reso
 	d.Set("serial", cert.Serial)
 	d.Set("validity", convertSMValidityToList(cert.Validity))
 	d.Set("version", cert.Version)
+	// Set fields in case called from resourceSecretsManagerCertificateV1ImportState.
+	d.Set("name", cert.Name)
+	d.Set("id", cert.ID)
 
 	return nil
 }
 
-func resourceSecretsmanagerCertificateV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerCertificateV1Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -227,10 +230,10 @@ func resourceSecretsmanagerCertificateV1Update(ctx context.Context, d *schema.Re
 		}
 	}
 
-	return resourceSecretsmanagerCertificateV1Read(ctx, d, meta)
+	return resourceSecretsManagerCertificateV1Read(ctx, d, meta)
 }
 
-func resourceSecretsmanagerCertificateV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSecretsManagerCertificateV1Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cl, diagErr := getSecretsManagerClient(d, meta)
 	if diagErr != nil {
 		return diagErr
@@ -246,7 +249,10 @@ func resourceSecretsmanagerCertificateV1Delete(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func resourceSecretsmanagerCertificateV1ImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+// resourceSecretsManagerCertificateV1ImportState —  helper used in Importer: &schema.ResourceImporter
+// to avoid difficulties occured with required SEL_PROJECT_ID env in
+// resourceSecretsManagerCertificateV1Read when uising schema.ImportStatePassthroughContext.
+func resourceSecretsManagerCertificateV1ImportState(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	config := meta.(*Config)
 	if config.ProjectID == "" {
 		return nil, fmt.Errorf("SEL_PROJECT_ID must be set for the resource import")
@@ -254,31 +260,9 @@ func resourceSecretsmanagerCertificateV1ImportState(ctx context.Context, d *sche
 
 	d.Set("project_id", config.ProjectID)
 
-	cl, diagErr := getSecretsManagerClient(d, meta)
-	if diagErr != nil {
-		return nil, fmt.Errorf("can't getSecretsManagerClient: %v", diagErr)
-	}
+	log.Print(msgImport(objectCertificate, d.Id()))
+	resourceSecretsManagerCertificateV1Read(ctx, d, meta)
 
-	certID := d.Id()
-
-	log.Print(msgImport(objectCertificate, certID))
-
-	cert, errGet := cl.Certificates.Get(ctx, certID)
-	if errGet != nil {
-		return nil, errGettingObject(objectSecret, d.Id(), errGet)
-	}
-
-	d.Set("name", cert.Name)
-	d.Set("dns_names", cert.DNSNames)
-	d.Set("id", cert.ID)
-
-	d.Set("issued_by", convertSMIssuedByToList(cert.IssuedBy))
-
-	d.Set("serial", cert.Serial)
-
-	d.Set("validity", convertSMValidityToList(cert.Validity))
-
-	d.Set("version", cert.Version)
 	return []*schema.ResourceData{d}, nil
 }
 
